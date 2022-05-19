@@ -4,27 +4,29 @@ import {
     CONTROL,
     SETTINGS,
     SERVER,
-    STOREGE
+    STOREGE,
 }
-from "/js/view.js";
+from "../js/view";
 import {
     Req,
     serverRequest
-} from "/js/server"
+} from "../js/server"
 import {
     NewMessage
-} from "/js/main"
+} from "../js/main"
 
 import Cookies from "js-cookie";
 
 
-
 export class ConectWSS {
+    soket!: WebSocket; 
+    message!: any
+    constructor() {
+    }
 
-    constructor() {}
-
-    async init() {
-        this.soket = new WebSocket(`${SERVER.WSS}${Cookies.get("token")}`);
+    async init():Promise<void> {
+    
+        this.soket = new WebSocket(`${SERVER.WSS}${Cookies.get("token")}`) ;
         this.soket.onopen = () => console.log("Open Soket");
         this.soket.onclose = () => this.init();
         this.soket.onmessage = (e) => {
@@ -32,7 +34,7 @@ export class ConectWSS {
             this.message.prependItem();
         };
     };
-    sendMessage(message) {
+    sendMessage(message:string):void {
         this.soket.send(
             JSON.stringify({
                 text: message,

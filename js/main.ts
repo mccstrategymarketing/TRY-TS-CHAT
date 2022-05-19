@@ -4,11 +4,18 @@ import {
     CONTROL,
     SETTINGS,
     SERVER,
-    STOREGE
+    STOREGE,
+    // chat,
+    // template,
+    // control,
+    // settings,
+    server,
+    storege
 }
-from "/js/view.js";
+from "../js/view";
 import {
     format
+     
 }
 from "date-fns"
 import Cookies from "js-cookie";
@@ -16,12 +23,13 @@ import Cookies from "js-cookie";
 import {
     ConectWSS,
     WSS
-} from "/js/coonectwss"
+} from "../js/coonectwss"
 
 import {
     Req,
     serverRequest
-} from "/js/server"
+} from "../js/server"
+import { getTime } from "date-fns/fp";
 
 CHAT.FORM.addEventListener("submit", sendMessage);
 SETTINGS.CHANGE_NAME.FORM.addEventListener("submit", changeName);
@@ -40,7 +48,7 @@ CONTROL.SETTINGS.addEventListener("click", () => {
 
 
 CONTROL.BTN_CLOSE.forEach(element => {
-    element.addEventListener("click", (e) => {
+    element.addEventListener("click", (e:any):void => {
         e.target.closest(".block").classList.remove("active");
     })
 });
@@ -52,15 +60,15 @@ async function inizialization() {
 
     if (await serverRequest.verification() == true) {
         WSS.init()
-            .then(serverRequest.verification())
-            .then(serverRequest.getHistrory())
+            .then(respose => {serverRequest.verification()})
+            .then(response => {serverRequest.getHistrory()})
     } else {
         alert("You aren't autorization")
     }
 
 }
 
-async function changeName(event) {
+async function changeName(event:Event) {
     event.preventDefault();
     const newName = SETTINGS.CHANGE_NAME.INPUT.value;
     const token = Cookies.get("token");
@@ -81,8 +89,21 @@ async function changeName(event) {
 
 
 
+
+
 export class NewMessage {
-    constructor(message) {
+    email:string
+    text: string
+    name:string
+    time: number | string
+    newMessageItem!: HTMLElement  
+    messageItem! :HTMLElement  
+    itemChatName! :HTMLElement  
+    timeItem !:HTMLElement  
+    blockItem !:HTMLElement  
+
+
+    constructor(message:any) {
         const {
             text,
             user: {
@@ -100,18 +121,19 @@ export class NewMessage {
         this.text = text;
         this.name = name == STOREGE.USER ? STOREGE.USER : name;
         this.time = createdAt || getTime(new Date());
-
+        
         // console.log(text, name, email,
         //     createdAt);
     }
-    createMessage() {
-        this.newMessageItem = TEMPLATE.ITEM.content.cloneNode(true);
-        this.blockItem = this.newMessageItem.querySelector(".item-message");
-        this.messageItem = this.newMessageItem.querySelector(".show-text");
-        this.itemChatName = this.newMessageItem.querySelector(".whois")
+    createMessage():HTMLElement  {
+      
+        this.newMessageItem = TEMPLATE.ITEM.content.cloneNode(true) as HTMLElement;
+        this.blockItem = this.newMessageItem.querySelector(".item-message") as HTMLElement;
+        this.messageItem = this.newMessageItem.querySelector(".show-text") as HTMLElement;
+        this.itemChatName = this.newMessageItem.querySelector(".whois") as HTMLElement
 
         this.time = format(new Date(), "HH:mm");
-        this.timeItem = this.newMessageItem.querySelector(".time");
+        this.timeItem = this.newMessageItem.querySelector(".time") as HTMLElement;
         this.blockItem.classList.add(this.email == STOREGE.EMAIL ? "me" : "oponent");
 
         this.itemChatName.innerText = this.email == STOREGE.EMAIL ? STOREGE.USER : this.name;
@@ -121,13 +143,13 @@ export class NewMessage {
         return this.newMessageItem
     }
 
-    appendItemMessage = () => CHAT.VIEW.append(this.createMessage());
-    prependItem = () => CHAT.VIEW.prepend(this.createMessage());
+    appendItemMessage = ():void => CHAT.VIEW.append(this.createMessage());
+    prependItem = ():void => CHAT.VIEW.prepend(this.createMessage());
 
 }
 
 
-function sendMessage(e) {
+function sendMessage(e:Event):void {
     e.preventDefault();
     const {
         value
@@ -139,10 +161,11 @@ function sendMessage(e) {
 
 
 export function renderHistory() {
-    for (let i = STOREGE.START; i < STOREGE.END; i++) {
-        const onceMessage = new NewMessage(STOREGE.ARR_MESSAGE[STOREGE.ARR_MESSAGE.length - [i]])
+    for (let i:number = STOREGE.START; i < STOREGE.END; i++) {
+         
+        const onceMessage = new NewMessage(STOREGE.ARR_MESSAGE[STOREGE.ARR_MESSAGE.length -i])
         onceMessage.createMessage();
-        onceMessage.appendItemMessage(CHAT.VIEW);
+        onceMessage.appendItemMessage();
     }
     STOREGE.START += 5
     STOREGE.END += 5
@@ -150,7 +173,7 @@ export function renderHistory() {
 
 
 
-function renderMessageOnScrollThrottle(e) {
+function renderMessageOnScrollThrottle(e:Event):void {
     const positionScroll = CHAT.VIEW.scrollTop - CHAT.VIEW.offsetHeight;
     const threshold = positionScroll + CHAT.VIEW.scrollHeight <= 66;
     threshold ? renderHistory() : false
@@ -158,7 +181,7 @@ function renderMessageOnScrollThrottle(e) {
 
 
 
-function sendEmail(e) {
+function sendEmail(e:Event) {
     e.preventDefault();
     const {
         value
@@ -166,13 +189,13 @@ function sendEmail(e) {
     validEMail(value) ? serverRequest.requestEmail(value) : alert("Try valid email");
 }
 
-function validEMail(mail) {
+function validEMail(mail:string):boolean {
     const regexp = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
     return regexp.test(String(mail).toLocaleLowerCase());
 }
 
 
-async function checkAuth(e) {
+async function checkAuth(e:Event) {
     e.preventDefault();
     const {
         value

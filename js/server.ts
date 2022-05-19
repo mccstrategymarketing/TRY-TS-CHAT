@@ -2,7 +2,7 @@ import Cookies from "js-cookie";
 import {
     ConectWSS,
     WSS
-} from "/js/coonectwss"
+} from "../js/coonectwss"
 import {
     CHAT,
     TEMPLATE,
@@ -11,16 +11,17 @@ import {
     SERVER,
     STOREGE
 }
-from "/js/view.js";
+from "../js/view";
 
 import {
     renderHistory
-} from '/js/main';
+} from '../js/main';
 
 export class Req {
 
-    constructor(url) {
-        this.url = url;
+
+    constructor() {
+
     }
 
     async getHistrory() {
@@ -48,7 +49,7 @@ export class Req {
         STOREGE.EMAIL = result.email;
         return true
     };
-    async requestEmail(mail) {
+    async requestEmail(mail:string):Promise<boolean> {
         const response = await fetch(SERVER.USER_URL, {
             headers: {
                 'Content-Type': 'application/json'
